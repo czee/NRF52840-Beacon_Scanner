@@ -48,9 +48,9 @@
 #define APP_BLE_OBSERVER_PRIO       3                                   /**< BLE observer priority of the application. There is no need to modify this value. */
 #define APP_SOC_OBSERVER_PRIO       1                                   /**< SoC observer priority of the application. There is no need to modify this value. */
 
-#define SCAN_INTERVAL               0x0320                              /**< Determines scan interval in units of 0.625 millisecond. */
-#define SCAN_WINDOW                 0x0320                              /**< Determines scan window in units of 0.625 millisecond. */
-#define SCAN_DURATION           	0x0000                              /**< Duration of the scanning in units of 10 milliseconds. If set to 0x0000, scanning continues until it is explicitly disabled. */
+#define SCAN_INTERVAL               0x0010                              /**< Determines scan interval in units of 0.625 millisecond. */
+#define SCAN_WINDOW                 0x0010                              /**< Determines scan window in units of 0.625 millisecond. */
+#define SCAN_DURATION               0x0000                              /**< Duration of the scanning in units of 10 milliseconds. If set to 0x0000, scanning continues until it is explicitly disabled. */
 
 NRF_BLE_SCAN_DEF(m_scan);                                   /**< Scanning Module instance. */
 
@@ -79,13 +79,21 @@ static void scan_start(void);
  */
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 {
+    uint16_t              company_id;
+    ble_gap_evt_t const * p_gap_evt = &p_ble_evt->evt.gap_evt;
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_ADV_REPORT:
         {
-            NRF_LOG_RAW_HEXDUMP_INFO (m_scan.scan_buffer.p_data, m_scan.scan_buffer.len);
-            NRF_LOG_RAW_INFO ("----------------------------------\r\n");
+            if (p_gap_evt->params.adv_report.type.extended_pdu)
+            {
+                //NRF_LOG_RAW_HEXDUMP_INFO (m_scan.scan_buffer.p_data, m_scan.scan_buffer.len);
+                NRF_LOG_RAW_HEXDUMP_INFO (p_gap_evt->params.adv_report.data.p_data, p_gap_evt->params.adv_report.data.len);
+                
+                NRF_LOG_RAW_INFO ("%d", p_gap_evt->params.adv_report.data.len);
+                NRF_LOG_RAW_INFO ("----------------------------------\r\n");
+            }
         }
 
         default:
